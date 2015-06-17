@@ -1,0 +1,93 @@
+#!/bin/sh
+
+CLASS=""
+DEFINE=""
+HPP=""
+CPP=""
+OPTION_C=0
+OPTION_I=0
+
+if [ $# -gt 0 ] && [ $1 = "-c" ];
+then
+    shift
+    OPTION_C=1
+fi
+
+if [ $# -gt 0 ] && [ $1 = "-i" ];
+then
+    shift
+    OPTION_I=1
+    OPTION_C=0
+fi
+
+CLASS="$1"
+DEFINE=$(echo "$CLASS" | tr '[:lower:]' '[:upper:]' )
+DEFINE=$DEFINE"_HPP_"
+HPP=$CLASS".hpp"
+CPP=$CLASS".cpp"
+
+if [ $# -eq 1 ] && [ $OPTION_I -eq 0 ];
+then
+##
+##  Creation du .hpp
+##
+    echo >> "$HPP"
+    echo "#ifndef $DEFINE" >> "$HPP"
+    echo "# define $DEFINE" >> "$HPP"
+    echo >> "$HPP"
+    echo "class\t$CLASS" >> "$HPP"
+    echo "{" >> "$HPP"
+    echo "public:" >> "$HPP"
+    echo "\t$CLASS();" >> "$HPP"
+    echo "\t~$CLASS();" >> "$HPP"
+    if [ $OPTION_C -eq 1 ]
+    then
+	echo "\t$CLASS(const $CLASS &);" >> "$HPP"
+	echo "\t$CLASS & operator=(const $CLASS &);" >> "$HPP"
+    fi
+    echo "};" >> "$HPP"
+    echo >> "$HPP"
+    echo "#endif /* !$DEFINE */" >> "$HPP"
+##
+##  Creation du .cpp
+##
+    echo >> "$CPP"
+    echo "#include \"$HPP\"" >> "$CPP"
+    echo >> "$CPP"
+    echo "$CLASS::$CLASS()" >> "$CPP"
+    echo '{' >> "$CPP"
+    echo '}' >> "$CPP"
+    echo >> "$CPP"
+    echo "$CLASS::~$CLASS()" >> "$CPP"
+    echo '{' >> "$CPP"
+    echo '}' >> "$CPP"
+    if [ $OPTION_C -eq 1 ]
+    then
+	echo >> "$CPP"
+	echo "$CLASS::$CLASS(const $CLASS & to_copy)" >> "$CPP"
+	echo '{' >> "$CPP"
+	echo '}' >> "$CPP"
+	echo >> "$CPP"
+	echo "$CLASS &\t$CLASS::operator=(const $CLASS & to_copy)" >> "$CPP"
+	echo '{' >> "$CPP"
+	echo 'return *this;' >> "$CPP"
+	echo '}' >> "$CPP"
+    fi
+elif [ $# -eq 1 ] && [ $OPTION_I -eq 1 ];
+then
+    echo >> "$HPP"
+    echo "#ifndef $DEFINE" >> "$HPP"
+    echo "# define $DEFINE" >> "$HPP"
+    echo >> "$HPP"
+    echo "class\t$CLASS" >> "$HPP"
+    echo "{" >> "$HPP"
+    echo "public:" >> "$HPP"
+    echo "\tvirtual ~$CLASS();" >> "$HPP"
+    echo "};" >> "$HPP"
+    echo >> "$HPP"
+    echo "#endif /* !$DEFINE */" >> "$HPP"
+else
+    echo "Usage: poo_script [-c] [-i] [1st class]"
+    exit
+fi
+
