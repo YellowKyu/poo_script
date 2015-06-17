@@ -87,7 +87,7 @@ then
     echo >> "$HPP"
     echo "#endif /* !$DEFINE */" >> "$HPP"
 else
-    echo "Usage: poo_script [-c] [-i] [1st class]"
+    echo "Usage: poo_script [-c] [-i] [class name]"
     exit
 fi
 
